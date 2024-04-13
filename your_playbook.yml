@@ -1,0 +1,57 @@
+---
+- name: Install Docker and Apache/HTTPd
+  hosts: your_target_hosts
+  become: yes
+
+  tasks:
+    - name: Install Docker dependencies
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - software-properties-common
+      when: ansible_os_family == 'Debian'
+
+    - name: Add Docker official GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Install Docker
+      package:
+        name: docker-ce
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install Apache or HTTPd
+      package:
+        name: "{{ apache_or_httpd_package }}"
+        state: present
+
+  vars:
+    apache_or_httpd_package:
+      Debian: apache2
+      RedHat: httpd
+
+  handlers:
+    - name: Restart Apache or HTTPd
+      service:
+        name: "{{ apache_or_httpd_service }}"
+        state: restarted
