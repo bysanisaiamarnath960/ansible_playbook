@@ -1,6 +1,6 @@
 ---
 - name: Install Docker and Apache/HTTPd
-  hosts: your_target_hosts
+  hosts: 192.168.1.11
   become: yes
 
   tasks:
